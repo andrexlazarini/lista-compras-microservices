@@ -1,0 +1,65 @@
+[
+  {
+    "id": "98320041-104e-45a5-81a0-8f8311bdb382",
+    "email": "admin@shopping.com",
+    "username": "admin",
+    "password": "$2a$12$O2tJVQi8y4rlAIAqjZYhZeEg5j0q9w036WxEzsfplGOn9fqYlSmEu",
+    "firstName": "Administrador",
+    "lastName": "Sistema",
+    "preferences": {
+      "defaultStore": "Mercado Central",
+      "currency": "BRL"
+    },
+    "role": "admin",
+    "status": "active",
+    "updatedAt": "2025-09-21T22:22:06.493Z"
+  },
+  {
+    "id": "3c797bbe-1ad4-44d3-80f4-d3242d9e1ef8",
+    "email": "postman.1758507253668@example.com",
+    "username": "postman_1758507253668",
+    "password": "$2a$12$nvZEnrEXBapKYAWDFMw95OrwBRJrIYXibP5bLnvk.DL1TUgKDvPdG",
+    "firstName": "Post",
+    "lastName": "Man",
+    "preferences": {
+      "defaultStore": "Mercado",
+      "currency": "BRL"
+    },
+    "role": "user",
+    "status": "active",
+    "createdAt": "2025-09-22T02:14:13.918Z",
+    "updatedAt": "2025-09-22T02:14:13.918Z"
+  },
+  {
+    "id": "00e06d07-7ddc-4cfd-b978-b4b9210dff6c",
+    "email": "postman.1758507465929@example.com",
+    "username": "postman_1758507465929",
+    "password": "$2a$12$st9LGbvz18vJFSNuILk4/e2aG2MkcSa.cO6j/7UDy2fhSfbgzaTPq",
+    "firstName": "Post",
+    "lastName": "Man",
+    "preferences": {
+      "defaultStore": "Mercado",
+      "currency": "BRL"
+    },
+    "role": "user",
+    "status": "active",
+    "createdAt": "2025-09-22T02:17:46.159Z",
+    "updatedAt": "2025-09-22T02:17:46.159Z"
+  },
+  {
+    "id": "7e46f0a9-8240-42dc-b27e-9f6ce8ecc0e5",
+    "email": "teste@example.com",
+    "username": "teste1",
+    "password": "$2a$12$wB5/b4smiG5cA0Nr7LTQZO7t4litbEh8/1aiRgjf9FIshR4J/tT7G",
+    "firstName": "teste",
+    "lastName": "1",
+    "preferences": {
+      "defaultStore": "Mercado",
+      "currency": "BRL"
+    },
+    "role": "user",
+    "status": "active",
+    "createdAt": "2025-09-22T02:22:32.687Z",
+    "updatedAt": "2025-09-22T02:41:17.582Z"
+  }
+]
