@@ -1,183 +1,91 @@
-const fs = require("fs-extra");
-const path = require("path");
 
-const REGISTRY_FILE = path.join(__dirname, "service-registry.json");
+// shared/serviceRegistry.js
+// Registry simples baseado em arquivo com health-checks periódicos.
 
-class ServiceRegistry {
-  constructor() {
-    this.initializeRegistry();
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
+
+const REGISTRY_FILE = path.resolve(__dirname, 'registry.json');
+const HEALTH_INTERVAL_MS = 30 * 1000; // 30s
+const STALE_MS = 2 * 60 * 1000; // 2min
+
+function now() { return new Date().toISOString(); }
+
+function _load() {
+  if (!fs.existsSync(REGISTRY_FILE)) {
+    fs.writeFileSync(REGISTRY_FILE, JSON.stringify({ services: [] }, null, 2));
   }
+  const raw = fs.readFileSync(REGISTRY_FILE, 'utf-8') || '{"services":[]}';
+  try { return JSON.parse(raw) } catch (e) { return { services: [] } }
+}
 
-  initializeRegistry() {
-    try {
-      console.log(`Registry file path: ${REGISTRY_FILE}`);
-      if (!fs.existsSync(REGISTRY_FILE)) {
-        fs.writeJsonSync(REGISTRY_FILE, {}, { spaces: 2 });
-        console.log("Arquivo registry criado:", REGISTRY_FILE);
-      } else {
-        console.log("Arquivo registry já existe:", REGISTRY_FILE);
-      }
-    } catch (error) {
-      console.error("Erro ao inicializar registry:", error.message);
-      console.error("Stack:", error.stack);
-    }
+function _save(obj) {
+  fs.writeFileSync(REGISTRY_FILE, JSON.stringify(obj, null, 2));
+}
+
+function list() {
+  return _load().services;
+}
+
+function cleanup() {
+  const reg = _load();
+  const t = Date.now();
+  reg.services = reg.services.filter(svc => (t - new Date(svc.lastHeartbeat).getTime()) < STALE_MS);
+  _save(reg);
+}
+
+function register({ name, url }) {
+  const reg = _load();
+  const existingIdx = reg.services.findIndex(s => s.name === name && s.url === url);
+  const entry = {
+    name,
+    url,
+    status: 'UNKNOWN',
+    lastHeartbeat: now()
+  };
+  if (existingIdx >= 0) {
+    reg.services[existingIdx] = { ...reg.services[existingIdx], ...entry };
+  } else {
+    reg.services.push(entry);
   }
+  _save(reg);
 
-  async #readRegistry() {
+  // inicia heartbeats para este processo
+  const timer = setInterval(async () => {
     try {
-      if (!fs.existsSync(REGISTRY_FILE)) {
-        return {};
-      }
-
-      const fileContent = fs.readFileSync(REGISTRY_FILE, "utf8");
-      if (!fileContent.trim()) {
-        return {};
-      }
-
-      const data = JSON.parse(fileContent);
-      console.log("Registry content:", Object.keys(data));
-      return data;
-    } catch (error) {
-      console.error("Erro ao ler registry:", error.message);
-      return {};
+      cleanup();
+      const { data } = await axios.get(`${url.replace(/\/+$/,'')}/health`).catch(() => ({ data: { status: 'DOWN' } }));
+      update({ name, url, status: data?.status || 'DOWN' });
+    } catch (e) {
+      update({ name, url, status: 'DOWN' });
     }
-  }
+  }, HEALTH_INTERVAL_MS);
 
-  async #writeRegistry(services) {
-    try {
-      fs.writeJsonSync(REGISTRY_FILE, services, { spaces: 2 });
-    } catch (error) {
-      console.error("Erro ao salvar registry:", error.message);
-    }
-  }
+  const stop = () => clearInterval(timer);
+  process.on('exit', stop);
+  process.on('SIGINT', () => { stop(); process.exit(0); });
+  process.on('SIGTERM', () => { stop(); process.exit(0); });
 
-  async register(serviceName, serviceInfo) {
-    try {
-      console.log(`=== REGISTRO DE SERVIÇO ===`);
-      console.log(`Serviço: ${serviceName}`);
-      console.log(`URL: ${serviceInfo.url}`);
-      console.log(`Caminho do arquivo: ${REGISTRY_FILE}`);
+  return { name, url };
+}
 
-      const services = await this.#readRegistry();
-      console.log(`Registry atual:`, Object.keys(services));
-
-      services[serviceName] = {
-        ...serviceInfo,
-        registeredAt: new Date().toISOString(),
-        lastHealthCheck: new Date().toISOString(),
-        healthy: true,
-      };
-
-      await this.#writeRegistry(services);
-      console.log(`✅ Serviço ${serviceName} registrado com sucesso!`);
-      return true;
-    } catch (error) {
-      console.error(`❌ Erro ao registrar ${serviceName}:`, error.message);
-      console.error(error.stack);
-      return false;
-    }
-  }
-
-  async discover(serviceName) {
-    try {
-      const services = await this.#readRegistry();
-      console.log(`Services in registry:`, Object.keys(services));
-
-      const service = services[serviceName];
-
-      if (!service) {
-        console.warn(`Serviço não encontrado no registry: ${serviceName}`);
-        return null;
-      }
-
-      if (!service.healthy) {
-        console.warn(`Serviço não saudável: ${serviceName}`);
-        return null;
-      }
-
-      console.log(`Serviço encontrado: ${serviceName} -> ${service.url}`);
-      return service;
-    } catch (error) {
-      console.error("Erro ao descobrir serviço:", error.message);
-      return null;
-    }
-  }
-
-  async updateHealth(serviceName, isHealthy) {
-    try {
-      const services = await this.#readRegistry();
-
-      if (services[serviceName]) {
-        services[serviceName].healthy = isHealthy;
-        services[serviceName].lastHealthCheck = new Date().toISOString();
-
-        await this.#writeRegistry(services);
-
-        if (!isHealthy) {
-          console.warn(`Serviço marcado como não saudável: ${serviceName}`);
-        } else {
-          console.log(`Serviço marcado como saudável: ${serviceName}`);
-        }
-
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error("Erro ao atualizar saúde do serviço:", error.message);
-      return false;
-    }
-  }
-
-  async getAllServices() {
-    try {
-      const services = await this.#readRegistry();
-      console.log(
-        "🔄 getAllServices - Services no registry:",
-        Object.keys(services)
-      );
-      return services;
-    } catch (error) {
-      console.error("❌ Erro ao obter todos os serviços:", error.message);
-      console.error(error.stack);
-      return {};
-    }
-  }
-
-  async cleanup() {
-    try {
-      const services = await this.#readRegistry();
-      const now = new Date();
-      let cleaned = false;
-
-      for (const [serviceName, serviceInfo] of Object.entries(services)) {
-        const lastCheck = new Date(serviceInfo.lastHealthCheck);
-        const diffMinutes = (now - lastCheck) / (1000 * 60);
-
-        if (diffMinutes > 2) {
-          console.log(`Removendo serviço inativo: ${serviceName}`);
-          delete services[serviceName];
-          cleaned = true;
-        }
-      }
-
-      if (cleaned) {
-        await this.#writeRegistry(services);
-      }
-
-      return cleaned;
-    } catch (error) {
-      console.error("Erro na limpeza do registry:", error.message);
-      return false;
-    }
+function update({ name, url, status }) {
+  const reg = _load();
+  const idx = reg.services.findIndex(s => s.name === name && s.url === url);
+  if (idx >= 0) {
+    reg.services[idx].status = status || reg.services[idx].status;
+    reg.services[idx].lastHeartbeat = now();
+    _save(reg);
   }
 }
 
-// Singleton instance - mas agora funciona apenas com arquivo
-const serviceRegistry = new ServiceRegistry();
+function resolve(name) {
+  // retorna a primeira entrada UP do serviço
+  cleanup();
+  const svc = list().find(s => s.name === name && s.status === 'UP');
+  if (!svc) throw new Error(`Service ${name} not available`);
+  return svc.url.replace(/\/+$/,'');
+}
 
-// Limpeza regular de serviços inativos
-setInterval(() => {
-  serviceRegistry.cleanup();
-}, 60000);
-
-module.exports = serviceRegistry;
+module.exports = { register, resolve, list, cleanup, REGISTRY_FILE };

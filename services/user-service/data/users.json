@@ -1,0 +1,46 @@
+{
+  "data": [
+    {
+      "id": "e58d4c15-f209-4763-85ce-b58b79a176e2",
+      "email": "teste@example.com",
+      "username": "teste1",
+      "password": "$2a$10$A/yzik9lAvU4cwBhOJVRzOu/w8TNJKA.hN0HaAjIIJMePjkj/2G0m",
+      "firstName": "teste",
+      "lastName": "1",
+      "preferences": {
+        "defaultStore": "",
+        "currency": "BRL"
+      },
+      "createdAt": "2025-09-22T18:29:07.055Z",
+      "updatedAt": "2025-09-22T18:29:07.055Z"
+    },
+    {
+      "id": "e4eee6ea-a776-412e-ba95-4469dd220d63",
+      "email": "user@example.com",
+      "username": "user",
+      "password": "$2a$10$twxbFX6LIv1dFuO0qzI85uH3gvSmUrdYUyii.jiqjgli5qn8asqjW",
+      "firstName": "User",
+      "lastName": "Demo",
+      "preferences": {
+        "defaultStore": "",
+        "currency": "BRL"
+      },
+      "createdAt": "2025-09-22T18:34:23.927Z",
+      "updatedAt": "2025-09-22T18:34:23.927Z"
+    },
+    {
+      "id": "07eb4d18-b877-48fa-aeed-5e586620aa8b",
+      "email": "teste2@gmail.com",
+      "username": "teste",
+      "password": "$2a$10$ScRnVhuXbL2CPMmOBsDmKOgtjo4rBKMmlsWy0T8QURAUqLko3LvXS",
+      "firstName": "teste",
+      "lastName": "ste",
+      "preferences": {
+        "defaultStore": "",
+        "currency": "BRL"
+      },
+      "createdAt": "2025-09-22T18:34:55.924Z",
+      "updatedAt": "2025-09-22T18:34:55.924Z"
+    }
+  ]
+}

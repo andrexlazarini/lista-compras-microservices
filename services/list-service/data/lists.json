@@ -1,0 +1,19 @@
+{
+  "data": [
+    {
+      "id": "3ce5fa73-e10c-448a-80e2-5fcc1fa9e887",
+      "userId": "07eb4d18-b877-48fa-aeed-5e586620aa8b",
+      "name": "Compra da semana",
+      "description": "Feira e limpeza",
+      "status": "active",
+      "items": [],
+      "summary": {
+        "totalItems": 0,
+        "purchasedItems": 0,
+        "estimatedTotal": 0
+      },
+      "createdAt": "2025-09-22T18:37:56.151Z",
+      "updatedAt": "2025-09-22T18:37:56.151Z"
+    }
+  ]
+}
