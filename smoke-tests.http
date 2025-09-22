@@ -1,0 +1,72 @@
+### HEALTH
+GET http://localhost:3000/health
+
+### REGISTRY
+GET http://localhost:3000/registry
+
+### REGISTER
+POST http://localhost:3000/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "username": "janedoe",
+  "password": "Senha@123",
+  "firstName": "Jane",
+  "lastName": "Doe"
+}
+
+### LOGIN
+POST http://localhost:3000/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "janedoe",
+  "password": "Senha@123"
+}
+
+### ITEMS (FILTER active)
+GET http://localhost:3000/api/items?active=true&limit=5
+
+### CATEGORIES
+GET http://localhost:3000/api/categories
+
+### SEARCH
+GET http://localhost:3000/api/search?q=pao
+
+### CREATE LIST
+@token = {{LOGIN.response.body.$.data.token}}
+POST http://localhost:3000/api/lists
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Compras da Semana",
+  "description": "Teste de lista via REST Client"
+}
+
+### GET LISTS
+GET http://localhost:3000/api/lists
+Authorization: Bearer {{token}}
+
+### ADD ITEM (use the first item id from ITEMS)
+@itemId = {{ITEMS.response.body.$.data[0].id}}
+@listId = {{GET LISTS.response.body.$.data[0].id}}
+POST http://localhost:3000/api/lists/{{listId}}/items
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "itemId": "{{itemId}}",
+  "quantity": 2,
+  "estimatedPrice": 10.5,
+  "notes": "comprar fresco"
+}
+
+### SUMMARY
+GET http://localhost:3000/api/lists/{{listId}}/summary
+Authorization: Bearer {{token}}
+
+### DASHBOARD
+GET http://localhost:3000/api/dashboard
+Authorization: Bearer {{token}}
