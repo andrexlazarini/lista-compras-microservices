@@ -1,0 +1,11 @@
+# Flutter/Dart/Pub
+.dart_tool/
+.packages
+.pub-cache/
+build/
+ios/Pods/
+android/.gradle/
+android/local.properties
+.DS_Store
+.idea/
+*.iml
