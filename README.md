@@ -10,3 +10,7 @@ Projeto Flutter com Material 3, CRUD SQLite e navegação push/pop.
    flutter run -d emulator-XXXX
    ```
 2. O banco SQLite é criado no primeiro uso.
+
+
+
+Link youtube: https://youtu.be/_-sC1Y2z-kI
