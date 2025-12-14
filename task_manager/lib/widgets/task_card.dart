@@ -150,7 +150,17 @@ class TaskCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              IconButton(
+              
+              // Indicador de sincronização (offline-first)
+              Padding(
+                padding: const EdgeInsets.only(right: 4),
+                child: Icon(
+                  task.isSynced ? Icons.cloud_done : Icons.cloud_off,
+                  size: 20,
+                  color: task.isSynced ? Colors.green : Colors.orange,
+                ),
+              ),
+IconButton(
                 onPressed: onDelete,
                 icon: const Icon(Icons.delete_outline),
                 color: Colors.red,

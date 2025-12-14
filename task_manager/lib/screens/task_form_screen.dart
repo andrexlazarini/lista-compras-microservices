@@ -38,18 +38,23 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     super.dispose();
   }
 
-  Future<void> _saveTask() async {
+    Future<void> _saveTask() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
       if (widget.task == null) {
+        // CREATE: grava localmente e coloca na fila de sincronização
         final newTask = Task(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          isSynced: false,
         );
-        await DatabaseService.instance.create(newTask);
+        final id = await DatabaseService.instance.create(newTask);
+        final taskWithId = newTask.copyWith(id: id);
+        await DatabaseService.instance.enqueueSync('create', taskWithId);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -60,13 +65,17 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           );
         }
       } else {
+        // UPDATE: atualiza localmente e marca como pendente de sync
         final updatedTask = widget.task!.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
           priority: _priority,
           completed: _completed,
+          isSynced: false,
         );
         await DatabaseService.instance.update(updatedTask);
+        await DatabaseService.instance.enqueueSync('update', updatedTask);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -79,6 +88,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       }
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
+} catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Erro ao salvar: $e'), backgroundColor: Colors.red),

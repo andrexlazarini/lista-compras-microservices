@@ -1,5 +1,5 @@
 name: task_manager
-description: Task Manager Pro (Flutter + Material 3 + SQLite)
+description: Task Manager Pro (Flutter + Material 3 + SQLite + Offline-First)
 publish_to: "none"
 version: 1.0.0+1
 
@@ -14,6 +14,8 @@ dependencies:
   sqflite: ^2.3.3
   path: ^1.9.0
   path_provider: ^2.1.4
+  connectivity_plus: ^5.0.2
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:

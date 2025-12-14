@@ -1,6 +1,8 @@
 import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import '../models/task.dart';
 
 class TaskCard extends StatelessWidget {
@@ -8,6 +10,7 @@ class TaskCard extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback onDelete;
   final Function(bool?) onCheckboxChanged;
+
   const TaskCard({
     super.key,
     required this.task,
@@ -38,7 +41,7 @@ class TaskCard extends StatelessWidget {
       case 'high':
         return Icons.arrow_upward;
       case 'medium':
-        return Icons.remove;
+        return Icons.horizontal_rule;
       case 'low':
         return Icons.arrow_downward;
       default:
@@ -66,13 +69,21 @@ class TaskCard extends StatelessWidget {
     final priorityColor = _getPriorityColor();
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm');
 
+    final syncColor = task.isSynced ? Colors.green : Colors.orange;
+    final syncIcon =
+    task.isSynced ? Icons.cloud_done : Icons.cloud_off;
+    final syncLabel =
+    task.isSynced ? 'Sincronizada' : 'Pendente';
+
     return Card(
       elevation: 2,
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: task.completed ? Colors.grey.shade300 : priorityColor.withOpacity(0.3),
+          color: task.completed
+              ? Colors.grey.shade300
+              : priorityColor.withOpacity(0.3),
           width: 2,
         ),
       ),
@@ -82,13 +93,16 @@ class TaskCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // header
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Checkbox(value: task.completed, onChanged: onCheckboxChanged, activeColor: Colors.green),
+                  Checkbox(
+                    value: task.completed,
+                    onChanged: onCheckboxChanged,
+                    activeColor: Colors.green,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Column(
@@ -99,8 +113,12 @@ class TaskCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
-                            decoration: task.completed ? TextDecoration.lineThrough : null,
-                            color: task.completed ? Colors.grey : Colors.black87,
+                            decoration: task.completed
+                                ? TextDecoration.lineThrough
+                                : null,
+                            color: task.completed
+                                ? Colors.grey
+                                : Colors.black87,
                           ),
                         ),
                         if (task.description.isNotEmpty) ...[
@@ -111,7 +129,9 @@ class TaskCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 14,
-                              color: task.completed ? Colors.grey : Colors.black54,
+                              color: task.completed
+                                  ? Colors.grey
+                                  : Colors.black54,
                             ),
                           ),
                         ],
@@ -122,92 +142,193 @@ class TaskCard extends StatelessWidget {
                           children: [
                             // prioridade
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
                               decoration: BoxDecoration(
                                 color: priorityColor.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
-                                border: Border.all(color: priorityColor.withOpacity(0.5)),
+                                border: Border.all(
+                                  color: priorityColor.withOpacity(0.5),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(_getPriorityIcon(), size: 14, color: priorityColor),
+                                  Icon(
+                                    _getPriorityIcon(),
+                                    size: 14,
+                                    color: priorityColor,
+                                  ),
                                   const SizedBox(width: 4),
                                   Text(
                                     _getPriorityLabel(),
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: priorityColor),
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: priorityColor,
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
                             if (task.hasPhoto)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.blue.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                                  border: Border.all(
+                                    color: Colors.blue.withOpacity(0.5),
+                                  ),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.photo_camera, size: 14, color: Colors.blue),
+                                    Icon(
+                                      Icons.photo_camera,
+                                      size: 14,
+                                      color: Colors.blue,
+                                    ),
                                     SizedBox(width: 4),
-                                    Text('Foto', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.blue)),
+                                    Text(
+                                      'Foto',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.blue,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             if (task.hasLocation)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.purple.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.purple.withOpacity(0.5)),
+                                  border: Border.all(
+                                    color: Colors.purple.withOpacity(0.5),
+                                  ),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.location_on, size: 14, color: Colors.purple),
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 14,
+                                      color: Colors.purple,
+                                    ),
                                     SizedBox(width: 4),
-                                    Text('Local', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.purple)),
+                                    Text(
+                                      'Local',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.purple,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
                             if (task.completed && task.wasCompletedByShake)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
                                 decoration: BoxDecoration(
                                   color: Colors.green.withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.green.withOpacity(0.5)),
+                                  border: Border.all(
+                                    color: Colors.green.withOpacity(0.5),
+                                  ),
                                 ),
                                 child: const Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.vibration, size: 14, color: Colors.green),
+                                    Icon(
+                                      Icons.vibration,
+                                      size: 14,
+                                      color: Colors.green,
+                                    ),
                                     SizedBox(width: 4),
-                                    Text('Shake', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.green)),
+                                    Text(
+                                      'Shake',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.green,
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 4,
+                              ),
+                              decoration: BoxDecoration(
+                                color: syncColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: syncColor.withOpacity(0.5),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(syncIcon,
+                                      size: 14, color: syncColor),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    syncLabel,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                      color: syncColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Criada em ${dateFormat.format(task.createdAt)}',
-                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  IconButton(onPressed: onDelete, icon: const Icon(Icons.delete_outline), color: Colors.red, tooltip: 'Deletar'),
+                  IconButton(
+                    onPressed: onDelete,
+                    icon: const Icon(Icons.delete_outline),
+                    color: Colors.red,
+                    tooltip: 'Deletar',
+                  ),
                 ],
               ),
             ),
             if (task.hasPhoto)
               ClipRRect(
-                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(12),
+                  bottomRight: Radius.circular(12),
+                ),
                 child: Image.file(
                   File(task.photoPath!),
                   width: double.infinity,
@@ -220,9 +341,19 @@ class TaskCard extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.broken_image_outlined, size: 48, color: Colors.grey[400]),
+                          Icon(
+                            Icons.broken_image_outlined,
+                            size: 48,
+                            color: Colors.grey[400],
+                          ),
                           const SizedBox(height: 8),
-                          Text('Foto não encontrada', style: TextStyle(color: Colors.grey[600], fontSize: 14)),
+                          Text(
+                            'Foto não encontrada',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
                         ],
                       ),
                     );

@@ -5,7 +5,9 @@ class Task {
   final bool completed;
   final String priority; // 'low' | 'medium' | 'high' | 'urgent'
   final DateTime createdAt;
+  final DateTime updatedAt;
   final DateTime? dueDate;
+  final bool isSynced; // false = pendente de sincronização
 
   Task({
     this.id,
@@ -14,8 +16,11 @@ class Task {
     required this.priority,
     required this.completed,
     DateTime? createdAt,
+    DateTime? updatedAt,
     this.dueDate,
-  }) : createdAt = createdAt ?? DateTime.now();
+    this.isSynced = true,
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
 
   Task copyWith({
     int? id,
@@ -24,7 +29,9 @@ class Task {
     bool? completed,
     String? priority,
     DateTime? createdAt,
+    DateTime? updatedAt,
     DateTime? dueDate,
+    bool? isSynced,
   }) {
     return Task(
       id: id ?? this.id,
@@ -33,7 +40,9 @@ class Task {
       completed: completed ?? this.completed,
       priority: priority ?? this.priority,
       createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? DateTime.now(),
       dueDate: dueDate ?? this.dueDate,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 
@@ -45,19 +54,28 @@ class Task {
       'completed': completed ? 1 : 0,
       'priority': priority,
       'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
       'dueDate': dueDate?.toIso8601String(),
+      'isSynced': isSynced ? 1 : 0,
     };
   }
 
   factory Task.fromMap(Map<String, dynamic> map) {
+    final createdAtStr = (map['createdAt'] ?? DateTime.now().toIso8601String()) as String;
+    final updatedAtStr = (map['updatedAt'] ?? createdAtStr) as String;
+
     return Task(
       id: map['id'] as int?,
       title: map['title'] as String,
       description: (map['description'] ?? '') as String,
       completed: (map['completed'] ?? 0) == 1,
       priority: (map['priority'] ?? 'medium') as String,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      dueDate: map['dueDate'] != null ? DateTime.tryParse(map['dueDate']) : null,
+      createdAt: DateTime.tryParse(createdAtStr) ?? DateTime.now(),
+      updatedAt: DateTime.tryParse(updatedAtStr) ?? DateTime.now(),
+      dueDate: map['dueDate'] != null
+          ? DateTime.tryParse(map['dueDate'] as String)
+          : null,
+      isSynced: (map['isSynced'] ?? 1) == 1,
     );
   }
 }

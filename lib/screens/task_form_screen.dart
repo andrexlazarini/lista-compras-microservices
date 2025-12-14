@@ -22,10 +22,8 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   bool _completed = false;
   bool _isLoading = false;
 
-  // Câmera
   String? _photoPath;
 
-  // GPS
   double? _latitude;
   double? _longitude;
   String? _locationName;
@@ -52,7 +50,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     super.dispose();
   }
 
-  // CÂMERA
   Future<void> _takePicture() async {
     final photoPath = await CameraService.instance.takePicture(context);
     if (photoPath != null && mounted) {
@@ -84,7 +81,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     );
   }
 
-  // LOCALIZAÇÃO
   void _showLocationPicker() {
     showModalBottomSheet(
       context: context,
@@ -120,8 +116,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
   Future<void> _saveTask() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+
     try {
       if (widget.task == null) {
+        final now = DateTime.now();
         final newTask = Task(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -131,14 +129,26 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
+          createdAt: now,
+          updatedAt: now,
+          isSynced: false,
         );
-        await DatabaseService.instance.create(newTask);
+
+        final createdId = await DatabaseService.instance.create(newTask);
+        final createdTask = newTask.copyWith(id: createdId);
+        await DatabaseService.instance.enqueueSync('create', createdTask);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tarefa criada'), backgroundColor: Colors.green),
+            const SnackBar(
+              content:
+              Text('Tarefa criada (aguardando sincronização)'),
+              backgroundColor: Colors.green,
+            ),
           );
         }
       } else {
+        final now = DateTime.now();
         final updatedTask = widget.task!.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -148,19 +158,32 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           latitude: _latitude,
           longitude: _longitude,
           locationName: _locationName,
+          updatedAt: now,
+          isSynced: false,
         );
+
         await DatabaseService.instance.update(updatedTask);
+        await DatabaseService.instance.enqueueSync('update', updatedTask);
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tarefa atualizada'), backgroundColor: Colors.blue),
+            const SnackBar(
+              content:
+              Text('Tarefa atualizada (aguardando sincronização)'),
+              backgroundColor: Colors.blue,
+            ),
           );
         }
       }
+
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('Erro ao salvar: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -205,7 +228,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 maxLength: 100,
               ),
               const SizedBox(height: 16),
-              // DESCRIÇÃO
               TextFormField(
                 controller: _descriptionController,
                 decoration: const InputDecoration(
@@ -220,7 +242,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 textCapitalization: TextCapitalization.sentences,
               ),
               const SizedBox(height: 16),
-              // PRIORIDADE
               DropdownButtonFormField<String>(
                 value: _priority,
                 decoration: const InputDecoration(
@@ -239,7 +260,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 },
               ),
               const SizedBox(height: 24),
-              // COMPLETA
               SwitchListTile(
                 title: const Text('Tarefa Completa'),
                 subtitle: Text(_completed ? 'Sim' : 'Não'),
@@ -252,7 +272,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ),
               ),
               const Divider(height: 32),
-              // FOTO
               Row(
                 children: [
                   const Icon(Icons.photo_camera, color: Colors.blue),
@@ -292,7 +311,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
                 ),
               const Divider(height: 32),
-              // LOCALIZAÇÃO
               Row(
                 children: [
                   const Icon(Icons.location_on, color: Colors.blue),
@@ -326,7 +344,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
                 ),
               const SizedBox(height: 32),
-              // SALVAR
               ElevatedButton.icon(
                 onPressed: _isLoading ? null : _saveTask,
                 icon: const Icon(Icons.save),

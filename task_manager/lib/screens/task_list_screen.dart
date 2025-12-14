@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../models/task.dart';
 import '../services/database_service.dart';
 import '../widgets/task_card.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../services/sync_service.dart';
 import 'task_form_screen.dart';
 
 class TaskListScreen extends StatefulWidget {
@@ -16,10 +18,38 @@ class _TaskListScreenState extends State<TaskListScreen> {
   String _filter = 'all'; // all, completed, pending
   bool _isLoading = false;
 
+  bool _isOnline = true;
+  StreamSubscription<ConnectivityResult>? _connectivitySub;
+  List<Task> _tasks = [];
+  String _filter = 'all'; // all, completed, pending
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
+    _initConnectivity();
     _loadTasks();
+  }
+
+  Future<void> _initConnectivity() async {
+    final result = await Connectivity().checkConnectivity();
+    _updateConnectionStatus(result);
+
+    _connectivitySub =
+        Connectivity().onConnectivityChanged.listen(_updateConnectionStatus);
+  }
+
+  void _updateConnectionStatus(ConnectivityResult result) {
+    final online = result != ConnectivityResult.none;
+    if (online != _isOnline) {
+      setState(() {
+        _isOnline = online;
+      });
+    }
+    if (online) {
+      // Ao voltar a conexão, dispara sincronização automática
+      SyncService.instance.syncAll().then((_) => _loadTasks());
+    }
   }
 
   Future<void> _loadTasks() async {
@@ -43,8 +73,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   Future<void> _toggleTask(Task task) async {
-    final updated = task.copyWith(completed: !task.completed);
+    final updated = task.copyWith(
+      completed: !task.completed,
+      isSynced: false,
+    );
     await DatabaseService.instance.update(updated);
+    await DatabaseService.instance.enqueueSync('update', updated);
     await _loadTasks();
   }
 
@@ -66,11 +100,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
 
     if (confirmed == true) {
+      // Marca remoção local e adiciona na fila de sincronização
+      if (task.id != null) {
+        await DatabaseService.instance.enqueueSync('delete', task);
+      }
       await DatabaseService.instance.delete(task.id);
       await _loadTasks();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tarefa excluída'), duration: Duration(seconds: 2)),
+          const SnackBar(content: Text('Tarefa excluída (pendente de sincronização)'), duration: Duration(seconds: 2)),
         );
       }
     }
@@ -93,6 +131,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
       appBar: AppBar(
         title: const Text('Minhas Tarefas'),
         actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _isOnline ? Icons.cloud_done : Icons.cloud_off,
+                  color: _isOnline ? Colors.greenAccent : Colors.orangeAccent,
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  _isOnline ? 'Online' : 'Offline',
+                  style: TextStyle(
+                    color: _isOnline ? Colors.greenAccent : Colors.orangeAccent,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
             onSelected: (value) => setState(() => _filter = value),
@@ -200,6 +260,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _connectivitySub?.cancel();
+    super.dispose();
   }
 
   Map<String, int> _calculateStats() {
