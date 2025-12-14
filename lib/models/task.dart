@@ -9,6 +9,7 @@ class Task {
 
   // Câmera
   final String? photoPath;
+  final String? photoUrl; // URL no S3 (LocalStack)
 
   // Sensores
   final DateTime? completedAt;
@@ -31,6 +32,7 @@ class Task {
     DateTime? createdAt,
     DateTime? updatedAt,
     this.photoPath,
+    this.photoUrl,
     this.completedAt,
     this.completedBy,
     this.latitude,
@@ -53,6 +55,7 @@ class Task {
     'createdAt': createdAt.toIso8601String(),
     'updatedAt': updatedAt.toIso8601String(),
     'photoPath': photoPath,
+    'photoUrl': photoUrl,
     'completedAt': completedAt?.toIso8601String(),
     'completedBy': completedBy,
     'latitude': latitude,
@@ -62,23 +65,37 @@ class Task {
   };
 
   factory Task.fromMap(Map<String, dynamic> map) {
-    final created = DateTime.parse(map['createdAt'] as String);
-    final updatedRaw = map['updatedAt'];
+    final createdAtRaw = map['createdAt'];
+    final updatedAtRaw = map['updatedAt'];
+
+    final created = createdAtRaw is String
+        ? DateTime.parse(createdAtRaw)
+        : DateTime.now();
+
     final updated =
-    updatedRaw is String ? DateTime.parse(updatedRaw) : created;
+    updatedAtRaw is String ? DateTime.parse(updatedAtRaw) : created;
+
+    // completed pode vir como int (sqlite), bool (api) ou null
+    final completedRaw = map['completed'];
+    final completed = completedRaw is bool
+        ? completedRaw
+        : (completedRaw is int ? completedRaw == 1 : false);
+
+    // isSynced pode vir null (assume true quando vem do servidor)
     final isSyncedRaw = map['isSynced'];
     final isSynced =
     isSyncedRaw == null ? true : (isSyncedRaw as int) == 1;
 
     return Task(
       id: map['id'] as int?,
-      title: map['title'] as String,
-      description: map['description'] as String,
-      priority: map['priority'] as String,
-      completed: (map['completed'] as int) == 1,
+      title: (map['title'] as String?) ?? '',
+      description: (map['description'] as String?) ?? '',
+      priority: (map['priority'] as String?) ?? 'medium',
+      completed: completed,
       createdAt: created,
       updatedAt: updated,
       photoPath: map['photoPath'] as String?,
+      photoUrl: map['photoUrl'] as String?,
       completedAt: map['completedAt'] != null
           ? DateTime.parse(map['completedAt'] as String)
           : null,
@@ -99,27 +116,30 @@ class Task {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? photoPath,
+    String? photoUrl,
     DateTime? completedAt,
     String? completedBy,
     double? latitude,
     double? longitude,
     String? locationName,
     bool? isSynced,
-  }) =>
-      Task(
-        id: id ?? this.id,
-        title: title ?? this.title,
-        description: description ?? this.description,
-        priority: priority ?? this.priority,
-        completed: completed ?? this.completed,
-        createdAt: createdAt ?? this.createdAt,
-        updatedAt: updatedAt ?? this.updatedAt,
-        photoPath: photoPath ?? this.photoPath,
-        completedAt: completedAt ?? this.completedAt,
-        completedBy: completedBy ?? this.completedBy,
-        latitude: latitude ?? this.latitude,
-        longitude: longitude ?? this.longitude,
-        locationName: locationName ?? this.locationName,
-        isSynced: isSynced ?? this.isSynced,
-      );
+  }) {
+    return Task(
+      id: id ?? this.id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      priority: priority ?? this.priority,
+      completed: completed ?? this.completed,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      photoPath: photoPath ?? this.photoPath,
+      photoUrl: photoUrl ?? this.photoUrl,
+      completedAt: completedAt ?? this.completedAt,
+      completedBy: completedBy ?? this.completedBy,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      locationName: locationName ?? this.locationName,
+      isSynced: isSynced ?? this.isSynced,
+    );
+  }
 }

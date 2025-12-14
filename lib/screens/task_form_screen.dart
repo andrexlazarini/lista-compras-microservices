@@ -55,7 +55,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     if (photoPath != null && mounted) {
       setState(() => _photoPath = photoPath);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Foto capturada!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text('Foto capturada!'),
+          backgroundColor: Colors.green,
+        ),
       );
     }
   }
@@ -75,7 +78,14 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         builder: (context) => Scaffold(
           backgroundColor: Colors.black,
           appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0),
-          body: Center(child: InteractiveViewer(child: Image.file(File(_photoPath!), fit: BoxFit.contain))),
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.file(
+                File(_photoPath!),
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -86,7 +96,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
       context: context,
       isScrollControlled: true,
       builder: (context) => Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
         child: SingleChildScrollView(
           child: LocationPicker(
             onLocationSelected: (lat, lon, address) {
@@ -120,6 +132,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
     try {
       if (widget.task == null) {
         final now = DateTime.now();
+
         final newTask = Task(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -134,21 +147,25 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           isSynced: false,
         );
 
+        // create() retorna int (id do sqlite)
         final createdId = await DatabaseService.instance.create(newTask);
+
+        // enqueueSync precisa de Task
         final createdTask = newTask.copyWith(id: createdId);
+
         await DatabaseService.instance.enqueueSync('create', createdTask);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content:
-              Text('Tarefa criada (aguardando sincronização)'),
+              content: Text('Tarefa criada (aguardando sincronização)'),
               backgroundColor: Colors.green,
             ),
           );
         }
       } else {
         final now = DateTime.now();
+
         final updatedTask = widget.task!.copyWith(
           title: _titleController.text.trim(),
           description: _descriptionController.text.trim(),
@@ -168,8 +185,7 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content:
-              Text('Tarefa atualizada (aguardando sincronização)'),
+              content: Text('Tarefa atualizada (aguardando sincronização)'),
               backgroundColor: Colors.blue,
             ),
           );
@@ -210,7 +226,6 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // TÍTULO
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
@@ -221,8 +236,12 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 ),
                 textCapitalization: TextCapitalization.sentences,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) return 'Digite um título';
-                  if (value.trim().length < 3) return 'Mínimo 3 caracteres';
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Digite um título';
+                  }
+                  if (value.trim().length < 3) {
+                    return 'Mínimo 3 caracteres';
+                  }
                   return null;
                 },
                 maxLength: 100,
@@ -267,7 +286,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 onChanged: (value) => setState(() => _completed = value),
                 activeColor: Colors.green,
                 secondary: Icon(
-                  _completed ? Icons.check_circle : Icons.radio_button_unchecked,
+                  _completed
+                      ? Icons.check_circle
+                      : Icons.radio_button_unchecked,
                   color: _completed ? Colors.green : Colors.grey,
                 ),
               ),
@@ -276,14 +297,22 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                 children: [
                   const Icon(Icons.photo_camera, color: Colors.blue),
                   const SizedBox(width: 8),
-                  const Text('Foto', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Foto',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   if (_photoPath != null)
                     TextButton.icon(
                       onPressed: _removePhoto,
                       icon: const Icon(Icons.delete_outline, size: 18),
                       label: const Text('Remover'),
-                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
                     ),
                 ],
               ),
@@ -295,11 +324,21 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                     height: 200,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 8, offset: const Offset(0, 4))],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.file(File(_photoPath!), width: double.infinity, fit: BoxFit.cover),
+                      child: Image.file(
+                        File(_photoPath!),
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                 )
@@ -308,21 +347,31 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   onPressed: _takePicture,
                   icon: const Icon(Icons.camera_alt),
                   label: const Text('Tirar Foto'),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                  ),
                 ),
               const Divider(height: 32),
               Row(
                 children: [
                   const Icon(Icons.location_on, color: Colors.blue),
                   const SizedBox(width: 8),
-                  const Text('Localização', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Localização',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                   const Spacer(),
                   if (_latitude != null)
                     TextButton.icon(
                       onPressed: _removeLocation,
                       icon: const Icon(Icons.delete_outline, size: 18),
                       label: const Text('Remover'),
-                      style: TextButton.styleFrom(foregroundColor: Colors.red),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
                     ),
                 ],
               ),
@@ -330,10 +379,19 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
               if (_latitude != null && _longitude != null)
                 Card(
                   child: ListTile(
-                    leading: const Icon(Icons.location_on, color: Colors.blue),
+                    leading:
+                    const Icon(Icons.location_on, color: Colors.blue),
                     title: Text(_locationName ?? 'Localização salva'),
-                    subtitle: Text(LocationService.instance.formatCoordinates(_latitude!, _longitude!)),
-                    trailing: IconButton(icon: const Icon(Icons.edit), onPressed: _showLocationPicker),
+                    subtitle: Text(
+                      LocationService.instance.formatCoordinates(
+                        _latitude!,
+                        _longitude!,
+                      ),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: _showLocationPicker,
+                    ),
                   ),
                 )
               else
@@ -341,7 +399,9 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   onPressed: _showLocationPicker,
                   icon: const Icon(Icons.add_location),
                   label: const Text('Adicionar Localização'),
-                  style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(16)),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                  ),
                 ),
               const SizedBox(height: 32),
               ElevatedButton.icon(
@@ -352,7 +412,10 @@ class _TaskFormScreenState extends State<TaskFormScreen> {
                   backgroundColor: Colors.blue,
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.all(16),
-                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  textStyle: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ],

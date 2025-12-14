@@ -1,0 +1,20 @@
+version: "3.8"
+
+services:
+  localstack:
+    image: localstack/localstack:latest
+    container_name: localstack-task-manager
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - AWS_DEFAULT_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+    volumes:
+      - "./backend/localstack-init:/etc/localstack/init/ready.d"
+      - "localstack_data:/var/lib/localstack"
+
+volumes:
+  localstack_data:
