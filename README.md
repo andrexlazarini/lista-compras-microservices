@@ -1,3 +1,6 @@
+Link video mensageria: https://youtu.be/QpkSqYOrmkg
+
+
 # Task Manager Offline-First + Upload de Fotos no S3 (LocalStack) — Etapa 3 (Opção B)
 
 Este projeto atende à **Etapa 3 (Opção B: S3 com LocalStack)** do laboratório DAMD/PUC Minas, substituindo armazenamento local de fotos por armazenamento em um **bucket S3 simulado** (LocalStack). fileciteturn0file0
@@ -94,4 +97,6 @@ aws --endpoint-url=http://localhost:4566 s3 ls s3://shopping-images/tasks/ --rec
 - `backend/localstack-init/01-create-bucket.sh` (criação do bucket)
 - `backend/media_service/` (API de upload)
 - `lib/services/media_service.dart` (client de upload no Flutter)
+
+
 
